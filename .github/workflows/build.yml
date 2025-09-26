@@ -1,0 +1,29 @@
+name: MDL Build PoC
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '12'
+    - name: Install dependencies
+      run: npm install gulp@3.9.1 gulp-shell@0.8.0 babel-register
+    - name: Run vulnerable Gulp task
+      run: npx gulp pushCodeFiles || true
+    - name: Check for proof file
+      run: |
+        if [ -f /tmp/rce_proof.txt ]; then
+          cat /tmp/rce_proof.txt
+        else
+          echo "No proof file found"
+        fi
+    - name: Upload proof artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rce-proof
+        path: /tmp/rce_proof.txt
