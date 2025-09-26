@@ -2,6 +2,7 @@ name: PoC RCE Demonstration
 on:
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,15 +13,17 @@ jobs:
       with:
         node-version: '12'
     - name: Install dependencies
-      run: npm install gulp@3.9.1 gulp-shell@0.8.0 gulp-zip@3.2.0 babel-register
+      run: npm install gulp@3.9.1 gulp-shell@0.8.0 gulp-zip@3.2.0 babel-register run-sequence@1.2.3 gulp-concat@2.6.1
     - name: Debug environment
       run: |
         echo "Node version:"
         node --version
         echo "NPM packages:"
-        npm list gulp gulp-shell gulp-zip babel-register
+        npm list gulp gulp-shell gulp-zip babel-register run-sequence gulp-concat
         echo "Package version:"
         node -p "require('./package.json').version"
+        echo "Gulpfile snippet:"
+        cat gulpfile.babel.js | grep pushCodeFiles -A10
     - name: Run vulnerable Gulp task
       run: |
         echo "Running gulp pushCodeFiles with version: $(node -p "require('./package.json').version")"
