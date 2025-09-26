@@ -14,13 +14,16 @@ jobs:
     - name: Install dependencies
       run: npm install gulp@3.9.1 gulp-shell@0.8.0 babel-register
     - name: Run vulnerable Gulp task
-      run: npx gulp pushCodeFiles || true
+      run: |
+        echo "Running gulp pushCodeFiles with version: $(node -p "require('./package.json').version")"
+        npx gulp pushCodeFiles || echo "Gulp task failed (expected if gsutil missing); check for RCE output above"
     - name: Check for proof file
       run: |
         if [ -f /tmp/rce_proof.txt ]; then
+          echo "Proof file found:"
           cat /tmp/rce_proof.txt
         else
-          echo "No proof file found"
+          echo "No proof file found (sandbox restriction)"
         fi
     - name: Upload proof artifact
       uses: actions/upload-artifact@v4
